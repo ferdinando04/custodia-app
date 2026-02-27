@@ -1,0 +1,37 @@
+# Dependencies
+src/node_modules/
+node_modules/
+
+# Next.js
+src/.next/
+src/out/
+
+# Environment variables (NUNCA subir a GitHub)
+src/.env
+src/.env.local
+src/.env.development.local
+src/.env.test.local
+src/.env.production.local
+.env
+.env.local
+.env.production
+
+# Build output
+src/dist/
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+src/next-env.d.ts
