@@ -1,17 +1,13 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-function LoginForm() {
-  const router       = useRouter();
-  const searchParams = useSearchParams();
-  const registered   = searchParams.get("registered");
-
-  const [form, setForm]       = useState({ email: "", password: "" });
-  const [error, setError]     = useState("");
+export default function RegisterPage() {
+  const router = useRouter();
+  const [form, setForm] = useState({ businessName: "", email: "", password: "" });
+  const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -20,19 +16,21 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email:    form.email,
-        password: form.password,
-        redirect: false,
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
 
-      if (result?.error) {
-        setError("Correo o contraseña incorrectos");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Error al crear la cuenta");
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // Registro exitoso → ir al login
+      router.push("/login?registered=1");
     } catch {
       setError("Error de conexión. Intenta de nuevo.");
     } finally {
@@ -50,16 +48,24 @@ function LoginForm() {
             C
           </div>
           <h1 className="text-2xl font-bold">Custodia</h1>
-          <p className="text-sm text-muted-foreground">Ingresa a tu panel de despacho</p>
+          <p className="text-sm text-muted-foreground">Crea la cuenta de tu negocio</p>
         </div>
 
-        {registered && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
-            ¡Cuenta creada! Ahora puedes ingresar.
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1.5 block" htmlFor="businessName">
+              Nombre del negocio
+            </label>
+            <input
+              id="businessName"
+              required
+              value={form.businessName}
+              onChange={(e) => setForm({ ...form, businessName: e.target.value })}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Ej: Asadero El Rancho"
+            />
+          </div>
+
           <div>
             <label className="text-sm font-medium mb-1.5 block" htmlFor="email">
               Correo electrónico
@@ -83,10 +89,11 @@ function LoginForm() {
               id="password"
               type="password"
               required
+              minLength={6}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Tu contraseña"
+              placeholder="Mínimo 6 caracteres"
             />
           </div>
 
@@ -101,25 +108,17 @@ function LoginForm() {
             disabled={loading}
             className="w-full rounded-md bg-primary text-primary-foreground py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            {loading ? "Ingresando..." : "Ingresar al panel"}
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          ¿No tienes cuenta?{" "}
-          <Link href="/register" className="text-primary underline">
-            Crear cuenta gratis
+          ¿Ya tienes cuenta?{" "}
+          <Link href="/login" className="text-primary underline">
+            Ingresar
           </Link>
         </p>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }
